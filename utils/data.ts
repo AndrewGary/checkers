@@ -1,4 +1,4 @@
-interface Square {
+export interface Square {
   id: number;
   x: number;
   y: number;
