@@ -129,7 +129,9 @@ export default function Home() {
 		if (selectedSquare.col === 0) {
 			if (
 				gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id ===
-				squareClicked.id
+					squareClicked.id &&
+				gameboard[selectedSquare.row + 1][selectedSquare.col + 1].occupiedBy
+					.name === ""
 			) {
 				//MOVING HANDLE THIS
 				console.log("IN HERERERE");
@@ -150,17 +152,23 @@ export default function Home() {
 		} else if (selectedSquare.col === 7) {
 			if (
 				gameboard[selectedSquare.row + 1][selectedSquare.col - 1].id ===
-				squareClicked.id
+					squareClicked.id &&
+				gameboard[selectedSquare.row + 1][selectedSquare.col - 1].occupiedBy
+					.name === ""
 			) {
 				console.log("moving");
 				movePlayer(squareClicked);
 			}
 		} else {
 			if (
-				gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id ===
-					squareClicked.id ||
-				gameboard[selectedSquare.row + 1][selectedSquare.col - 1].id ===
-					squareClicked.id
+				(gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id ===
+					squareClicked.id &&
+					gameboard[selectedSquare.row + 1][selectedSquare.col + 1].occupiedBy
+						.name === "") ||
+				(gameboard[selectedSquare.row + 1][selectedSquare.col - 1].id ===
+					squareClicked.id &&
+					gameboard[selectedSquare.row + 1][selectedSquare.col - 1].occupiedBy
+						.name === "")
 			) {
 				movePlayer(squareClicked);
 			}
