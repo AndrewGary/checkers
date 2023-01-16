@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { gameboard as gb, Square } from "@/utils/data";
 
+//handle Selection
+
 // When a game piece is clicked
 //     Determine if the player that clicked is the activePlayer
 //     If they are not the active player do nothing
@@ -13,21 +15,141 @@ import { gameboard as gb, Square } from "@/utils/data";
 export default function Home() {
 	const [gameboard, setGameBoard] = useState(gb);
 	const [currentPlayer, setCurrentPlayer] = useState("player1");
-	const [selectedSquare, setSelectedSquare] = useState({});
+	const [selectedSquare, setSelectedSquare] = useState<any>({
+		square: {
+			occupiedBy: {
+				name: "",
+				kinged: false,
+			},
+		},
+		//Will contain an array of square id's that the selected piece can move (No claiming enemys square).
+		moveOptions: [],
+		//Will contain an array of square id's that the selected piece can move (Claiming eneny square)
+		claimOptions: [],
+	});
 	const [gameMessage, setGameMessage] = useState("");
 	const [gameConfig, setGameConfig] = useState({
 		whosMoveIsIt: "player1",
 	});
 
-	const canPieceClickedBeMoved = (
-		squareClicked: Square,
-		x: number,
-		y: number
-	) => {
-		console.log("in here");
-		if (squareClicked.occupiedBy.name !== currentPlayer) {
-			return false;
+	const handleSelection = (squareClicked: Square, x: number, y: number) => {
+		//Checks if selectedSqure is not empty
+		if (selectedSquare.square.occupiedBy.name) {
+			if (
+				//checks if selectedSquare can simply be moved to new spot
+				selectedSquare.moveOptions.includes(squareClicked.id)
+			) {
+				movePlayer(squareClicked);
+				setSelectedSquare({
+					square: {
+						occupiedBy: {
+							name: "",
+							kinged: false,
+						},
+					},
+					//Will contain an array of square id's that the selected piece can move (No claiming enemys square).
+					moveOptions: [],
+					//Will contain an array of square id's that the selected piece can move (Claiming eneny square)
+					claimOptions: [],
+				});
+			}
+
+			if (selectedSquare.claimOptions.includes(squareClicked.id)) {
+				console.log("squareClicked.col: ", squareClicked.col);
+				console.log("selectedSquare.col: ", selectedSquare.col);
+				if (squareClicked.col < selectedSquare.square.col) {
+					// console.log("INSIDEEEE IF");
+					setSelectedSquare({
+						square: {
+							occupiedBy: {
+								name: "",
+								kinged: false,
+							},
+						},
+						//Will contain an array of square id's that the selected piece can move (No claiming enemys square).
+						moveOptions: [],
+						//Will contain an array of square id's that the selected piece can move (Claiming eneny square)
+						claimOptions: [],
+					});
+					movePlayer(
+						squareClicked,
+						gameboard[selectedSquare.square.row + 1][
+							selectedSquare.square.col - 1
+						].id
+					);
+				} else {
+					console.log("INISIDE OF ELSEEEE");
+					setSelectedSquare({
+						square: {
+							occupiedBy: {
+								name: "",
+								kinged: false,
+							},
+						},
+						//Will contain an array of square id's that the selected piece can move (No claiming enemys square).
+						moveOptions: [],
+						//Will contain an array of square id's that the selected piece can move (Claiming eneny square)
+						claimOptions: [],
+					});
+					movePlayer(
+						squareClicked,
+						gameboard[selectedSquare.square.row + 1][
+							selectedSquare.square.col + 1
+						].id
+					);
+				}
+			}
 		}
+
+		if (selectedSquare.square)
+			if (squareClicked.occupiedBy.name !== currentPlayer) {
+				return;
+			}
+
+		// const possibleMoves = [];
+		const tempMoveOptions = [];
+		const tempClaimOptions = [];
+
+		if (currentPlayer === "player1") {
+			if (gameboard[x + 1][y - 1] && !gameboard[x + 1][y - 1].occupiedBy.name) {
+				console.log("jeahhhh");
+				tempMoveOptions.push(gameboard[x + 1][y - 1].id);
+			}
+
+			if (gameboard[x + 1][y + 1] && !gameboard[x + 1][y + 1].occupiedBy.name) {
+				console.log("jeahhhh");
+				tempMoveOptions.push(gameboard[x + 1][y + 1].id);
+			}
+
+			if (
+				gameboard[x + 2][y - 2] &&
+				!gameboard[x + 2][y - 2].occupiedBy.name &&
+				gameboard[x + 1][y - 1].occupiedBy.name === "player2"
+			) {
+				tempClaimOptions.push(gameboard[x + 2][y - 2].id);
+			}
+
+			if (
+				gameboard[x + 2][y + 2] &&
+				!gameboard[x + 2][y + 2].occupiedBy.name &&
+				gameboard[x + 1][y + 1].occupiedBy.name === "player2"
+			) {
+				tempClaimOptions.push(gameboard[x + 2][y + 2].id);
+			}
+
+			// console.log("player 1 possibleMoves: ", possibleMoves);
+			if (tempMoveOptions.length || tempClaimOptions.length) {
+				setSelectedSquare({
+					square: { ...squareClicked },
+					moveOptions: [...tempMoveOptions],
+					claimOptions: [...tempClaimOptions],
+				});
+				return;
+			}
+		}
+
+		console.log("returning");
+		return;
 
 		if (y === 0 && gameboard[x + 1][y + 1].occupiedBy.name === currentPlayer) {
 			console.log("left col clicked");
@@ -47,51 +169,122 @@ export default function Home() {
 			return false;
 		}
 
-		if (y === 0) {
+		if (y === 0 || y === 1) {
 			if (gameboard[x + 1][y + 1].occupiedBy.name === "player2") {
-				if (
-					gameboard[x + 2][y].occupiedBy.name &&
-					gameboard[x + 2][y + 2].occupiedBy.name
-				) {
+				if (gameboard[x + 2][y + 2].occupiedBy.name) {
 					return false;
 				}
 			}
 		}
 
-		if (y === 7) {
+		if (y === 7 || y === 6) {
 			if (gameboard[x + 1][y - 1].occupiedBy.name === "player2") {
-				if (
-					gameboard[x + 2][y].occupiedBy.name &&
-					gameboard[x + 2][y - 2].occupiedBy.name
-				) {
+				if (gameboard[x + 2][y - 2].occupiedBy.name) {
 					return false;
 				}
+			}
+		}
+
+		if (y > 1 && y < 6) {
+			if (
+				gameboard[x + 1][y - 1].occupiedBy.name === "player2" &&
+				gameboard[x + 2][y - 2].occupiedBy.name
+			) {
+				return false;
+			}
+
+			if (
+				gameboard[x + 1][y + 1].occupiedBy.name === "player2" &&
+				gameboard[x + 2][y + 2].occupiedBy.name
+			) {
+				return false;
 			}
 		}
 
 		return true;
 	};
+	// const canPieceClickedBeMoved = (
+	// 	squareClicked: Square,
+	// 	x: number,
+	// 	y: number
+	// ) => {
+	// 	if (squareClicked.occupiedBy.name !== currentPlayer) {
+	// 		return false;
+	// 	}
 
-	const removeClaimedSquare = (idOfSquare: number) => {
-		const newGameBoard = gameboard.map((rowArray: any, rowI: number) => {
-			const jeah = rowArray.map((square: any, colI: number) => {
-				if (square.id === idOfSquare) {
-					return {
-						...square,
-						occupiedBy: {
-							...square.occupiedBy,
-							name: "",
-						},
-					};
-				}
+	// 	if (y === 0 && gameboard[x + 1][y + 1].occupiedBy.name === currentPlayer) {
+	// 		console.log("left col clicked");
+	// 		return false;
+	// 	}
 
-				return square;
-			});
-			return jeah;
-		});
+	// 	if (y === 7 && gameboard[x + 1][y - 1].occupiedBy.name === currentPlayer) {
+	// 		return false;
+	// 	}
 
-		setGameBoard(newGameBoard);
-	};
+	// 	if (
+	// 		y > 0 &&
+	// 		y < 7 &&
+	// 		gameboard[x + 1][y + 1].occupiedBy.name === currentPlayer &&
+	// 		gameboard[x + 1][y - 1].occupiedBy.name === currentPlayer
+	// 	) {
+	// 		return false;
+	// 	}
+
+	// 	if (y === 0 || y === 1) {
+	// 		if (gameboard[x + 1][y + 1].occupiedBy.name === "player2") {
+	// 			if (gameboard[x + 2][y + 2].occupiedBy.name) {
+	// 				return false;
+	// 			}
+	// 		}
+	// 	}
+
+	// 	if (y === 7 || y === 6) {
+	// 		if (gameboard[x + 1][y - 1].occupiedBy.name === "player2") {
+	// 			if (gameboard[x + 2][y - 2].occupiedBy.name) {
+	// 				return false;
+	// 			}
+	// 		}
+	// 	}
+
+	// 	if (y > 1 && y < 6) {
+	// 		if (
+	// 			gameboard[x + 1][y - 1].occupiedBy.name === "player2" &&
+	// 			gameboard[x + 2][y - 2].occupiedBy.name
+	// 		) {
+	// 			return false;
+	// 		}
+
+	// 		if (
+	// 			gameboard[x + 1][y + 1].occupiedBy.name === "player2" &&
+	// 			gameboard[x + 2][y + 2].occupiedBy.name
+	// 		) {
+	// 			return false;
+	// 		}
+	// 	}
+
+	// 	return true;
+	// };
+
+	// const removeClaimedSquare = (idOfSquare: number) => {
+	// 	const newGameBoard = gameboard.map((rowArray: any, rowI: number) => {
+	// 		const jeah = rowArray.map((square: any, colI: number) => {
+	// 			if (square.id === idOfSquare) {
+	// 				return {
+	// 					...square,
+	// 					occupiedBy: {
+	// 						...square.occupiedBy,
+	// 						name: "",
+	// 					},
+	// 				};
+	// 			}
+
+	// 			return square;
+	// 		});
+	// 		return jeah;
+	// 	});
+
+	// 	setGameBoard(newGameBoard);
+	// };
 
 	const movePlayer = (
 		squareClicked: any,
@@ -103,7 +296,7 @@ export default function Home() {
 		// const movePlayer = () => {
 		const newGameBoard = gameboard.map((rowArray: any, rowI: number) => {
 			const jeah = rowArray.map((square: any, colI: number) => {
-				if (square.id === selectedSquare.id) {
+				if (square.id === selectedSquare.square.id) {
 					return {
 						...square,
 						occupiedBy: {
@@ -143,160 +336,166 @@ export default function Home() {
 		console.log("newGameBoard: ", newGameBoard);
 	};
 
-	const handleSelection = (squareClicked: Square, x: number, y: number) => {
-		// console.log(gameboard[x + 1][y + 1].id, 'is occupied by: ', gameboard[x + 1][y+ 1].occupiedBy.name)
+	// const handleSelection = (squareClicked: Square, x: number, y: number) => {
+	// 	// console.log(gameboard[x + 1][y + 1].id, 'is occupied by: ', gameboard[x + 1][y+ 1].occupiedBy.name)
 
-		if (selectedSquare.id === undefined) {
-			console.log("no sleected square");
-		}
+	// 	if (selectedSquare.id === undefined) {
+	// 		console.log("no sleected square");
+	// 	}
 
-		if (canPieceClickedBeMoved(squareClicked, x, y)) {
-			setSelectedSquare(squareClicked);
-			return;
-		}
+	// 	if (canPieceClickedBeMoved(squareClicked, x, y)) {
+	// 		setSelectedSquare(squareClicked);
+	// 		return;
+	// 	}
 
-		// console.log();
-		// console.log(
-		// 	gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id ===
-		// 		squareClicked.id
-		// );
+	// 	// if (
+	// 	// 	!canPieceClickedBeMoved(squareClicked, x, y) &&
+	// 	// 	selectedSquare.occupiedBy
+	// 	// )
+	// 	if (selectedSquare.col === 0) {
+	// 		// console.log();
+	// 		// console.log(
+	// 		// 	gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id ===
+	// 		// 		squareClicked.id
+	// 		// );
 
-		if (selectedSquare.col === 0) {
-			//NOT CLAIMING SQUARE
-			if (
-				gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id ===
-					squareClicked.id &&
-				gameboard[selectedSquare.row + 1][selectedSquare.col + 1].occupiedBy
-					.name === ""
-			) {
-				//MOVING HANDLE THIS
-				console.log("IN HERERERE");
-				console.log("moving");
-				movePlayer(squareClicked);
-				return;
-			}
+	// 		//NOT CLAIMING SQUARE
+	// 		if (
+	// 			gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id ===
+	// 				squareClicked.id &&
+	// 			gameboard[selectedSquare.row + 1][selectedSquare.col + 1].occupiedBy
+	// 				.name === ""
+	// 		) {
+	// 			//MOVING HANDLE THIS
+	// 			console.log("IN HERERERE");
+	// 			console.log("moving");
+	// 			movePlayer(squareClicked);
+	// 			return;
+	// 		}
 
-			//CLAIMING SQUARE
-			if (
-				gameboard[selectedSquare.row + 2][selectedSquare.col + 2].id ===
-					squareClicked.id &&
-				gameboard[selectedSquare.row + 1][selectedSquare.col + 1].occupiedBy
-					.name === "player2"
-			) {
-				// MOVING 2 down and 2 right
-				//HANDLE THIS
-				// removeClaimedSquare(
-				// 	gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id
-				// );
-				movePlayer(
-					squareClicked,
-					gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id
-				);
-				return;
-			}
-		} else if (selectedSquare.col === 7) {
-			//NOT CLAIMING SQUARE
-			if (
-				gameboard[selectedSquare.row + 1][selectedSquare.col - 1].id ===
-					squareClicked.id &&
-				gameboard[selectedSquare.row + 1][selectedSquare.col - 1].occupiedBy
-					.name === ""
-			) {
-				console.log("moving");
-				movePlayer(squareClicked);
-				return;
-			}
+	// 		//CLAIMING SQUARE
+	// 		if (
+	// 			gameboard[selectedSquare.row + 2][selectedSquare.col + 2].id ===
+	// 				squareClicked.id &&
+	// 			gameboard[selectedSquare.row + 1][selectedSquare.col + 1].occupiedBy
+	// 				.name === "player2"
+	// 		) {
+	// 			// MOVING 2 down and 2 right
+	// 			//HANDLE THIS
+	// 			// removeClaimedSquare(
+	// 			// 	gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id
+	// 			// );
+	// 			movePlayer(
+	// 				squareClicked,
+	// 				gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id
+	// 			);
+	// 			return;
+	// 		}
+	// 	} else if (selectedSquare.col === 7) {
+	// 		console.log("in here");
+	// 		return;
+	// 		//NOT CLAIMING SQUARE
+	// 		if (
+	// 			gameboard[selectedSquare.row + 1][selectedSquare.col - 1].id ===
+	// 				squareClicked.id &&
+	// 			gameboard[selectedSquare.row + 1][selectedSquare.col - 1].occupiedBy
+	// 				.name === ""
+	// 		) {
+	// 			console.log("moving");
+	// 			movePlayer(squareClicked);
+	// 			return;
+	// 		}
 
-			//CLAIMING SQUARE
-			if (
-				gameboard[selectedSquare.row + 2][selectedSquare.col - 2].id ===
-					squareClicked.id &&
-				gameboard[selectedSquare.row + 1][selectedSquare.col - 1].occupiedBy
-					.name === "player2"
-			) {
-				// MOVING 2 down and 2 right
-				//HANDLE THIS
-				movePlayer(
-					squareClicked,
-					gameboard[selectedSquare.row + 1][selectedSquare.col - 1].id
-				);
-				return;
-				// removeClaimedSquare(
-				// 	gameboard[selectedSquare.row + 1][selectedSquare.col - 1].id
-				// );
-			}
-		} else {
-			//NOT Claiming any pieces
-			if (
-				(gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id ===
-					squareClicked.id &&
-					gameboard[selectedSquare.row + 1][selectedSquare.col + 1].occupiedBy
-						.name === "") ||
-				(gameboard[selectedSquare.row + 1][selectedSquare.col - 1].id ===
-					squareClicked.id &&
-					gameboard[selectedSquare.row + 1][selectedSquare.col - 1].occupiedBy
-						.name === "")
-			) {
-				movePlayer(squareClicked);
-				return;
-			}
+	// 		//CLAIMING SQUARE
+	// 		if (
+	// 			gameboard[selectedSquare.row + 2][selectedSquare.col - 2].id ===
+	// 				squareClicked.id &&
+	// 			gameboard[selectedSquare.row + 1][selectedSquare.col - 1].occupiedBy
+	// 				.name === "player2"
+	// 		) {
+	// 			// MOVING 2 down and 2 right
+	// 			//HANDLE THIS
+	// 			movePlayer(
+	// 				squareClicked,
+	// 				gameboard[selectedSquare.row + 1][selectedSquare.col - 1].id
+	// 			);
+	// 			return;
+	// 			// removeClaimedSquare(
+	// 			// 	gameboard[selectedSquare.row + 1][selectedSquare.col - 1].id
+	// 			// );
+	// 		}
+	// 	} else {
+	// 		//NOT Claiming any pieces
+	// 		if (
+	// 			(gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id ===
+	// 				squareClicked.id &&
+	// 				gameboard[selectedSquare.row + 1][selectedSquare.col + 1].occupiedBy
+	// 					.name === "") ||
+	// 			(gameboard[selectedSquare.row + 1][selectedSquare.col - 1].id ===
+	// 				squareClicked.id &&
+	// 				gameboard[selectedSquare.row + 1][selectedSquare.col - 1].occupiedBy
+	// 					.name === "")
+	// 		) {
+	// 			movePlayer(squareClicked);
+	// 			return;
+	// 		}
 
-			//CLAIMING PIECE
-			if (
-				gameboard[selectedSquare.row + 2][selectedSquare.col + 2].id ===
-					squareClicked.id &&
-				gameboard[selectedSquare.row + 1][selectedSquare.col + 1].occupiedBy
-					.name === "player2"
-			) {
-				// removeClaimedSquare(
-				// 	gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id
-				// );
-				movePlayer(
-					squareClicked,
-					gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id
-				);
-				return;
-			}
+	// 		//CLAIMING PIECE
+	// 		if (
+	// 			gameboard[selectedSquare.row + 2][selectedSquare.col + 2].id ===
+	// 				squareClicked.id &&
+	// 			gameboard[selectedSquare.row + 1][selectedSquare.col + 1].occupiedBy
+	// 				.name === "player2"
+	// 		) {
+	// 			// removeClaimedSquare(
+	// 			// 	gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id
+	// 			// );
+	// 			movePlayer(
+	// 				squareClicked,
+	// 				gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id
+	// 			);
+	// 			return;
+	// 		}
 
-			if (
-				gameboard[selectedSquare.row + 2][selectedSquare.col - 2].id ===
-					squareClicked.id &&
-				gameboard[selectedSquare.row + 1][selectedSquare.col - 1].occupiedBy
-					.name === "player2"
-			) {
-				// removeClaimedSquare(
-				// 	gameboard[selectedSquare.row + 1][selectedSquare.col - 1].id
-				// );
-				movePlayer(
-					squareClicked,
-					gameboard[selectedSquare.row + 1][selectedSquare.col - 1].id
-				);
-				return;
-			}
-		}
+	// 		if (
+	// 			gameboard[selectedSquare.row + 2][selectedSquare.col - 2].id ===
+	// 				squareClicked.id &&
+	// 			gameboard[selectedSquare.row + 1][selectedSquare.col - 1].occupiedBy
+	// 				.name === "player2"
+	// 		) {
+	// 			// removeClaimedSquare(
+	// 			// 	gameboard[selectedSquare.row + 1][selectedSquare.col - 1].id
+	// 			// );
+	// 			movePlayer(
+	// 				squareClicked,
+	// 				gameboard[selectedSquare.row + 1][selectedSquare.col - 1].id
+	// 			);
+	// 			return;
+	// 		}
+	// 	}
 
-		// if (
-		// 	gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id ===
-		// 	squareClicked.id
-		// ) {
-		// 	console.log("moving");
-		// } else {
-		// 	console.log("not moving");
-		// }
+	// 	// if (
+	// 	// 	gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id ===
+	// 	// 	squareClicked.id
+	// 	// ) {
+	// 	// 	console.log("moving");
+	// 	// } else {
+	// 	// 	console.log("not moving");
+	// 	// }
 
-		// console.log("squareClicked.id: ", squareClicked.id);
-		// console.log("gameboard[x + 1][y + 1].id: ", gameboard[x + 1].id);
-		// if (squareClicked.id === gameboard[y + 1][x + 1].id) {
-		// 	console.log("moiving");
-		// } else {
-		// 	console.log("not moving");
-		// }
-		// if (
-		// 	!gameboard[selectedSquare.row + 1][selectedSquare.col + 1].occupiedBy.name
-		// ) {
-		// 	console.log("moving");
-		// }
-	};
+	// 	// console.log("squareClicked.id: ", squareClicked.id);
+	// 	// console.log("gameboard[x + 1][y + 1].id: ", gameboard[x + 1].id);
+	// 	// if (squareClicked.id === gameboard[y + 1][x + 1].id) {
+	// 	// 	console.log("moiving");
+	// 	// } else {
+	// 	// 	console.log("not moving");
+	// 	// }
+	// 	// if (
+	// 	// 	!gameboard[selectedSquare.row + 1][selectedSquare.col + 1].occupiedBy.name
+	// 	// ) {
+	// 	// 	console.log("moving");
+	// 	// }
+	// };
 
 	return (
 		<div className="w-full min-h-screen flex justify-center items-center">
@@ -326,7 +525,7 @@ export default function Home() {
 															? " bg-black"
 															: "bg-red-500"
 													} ${
-														square.id === selectedSquare.id
+														square.id === selectedSquare.square.id
 															? "border-2 border-purple-500"
 															: ""
 													}`}
