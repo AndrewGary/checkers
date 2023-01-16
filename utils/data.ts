@@ -425,7 +425,7 @@ export const gameboard: Square[][] = [
       x: 4,
       y: 3,
       occupiedBy: {
-        name: "",
+        name: "player2",
         kinged: false,
       },
       backgroundColor: "bg-gray-800 bg-opacity-75",
@@ -453,7 +453,7 @@ export const gameboard: Square[][] = [
       x: 6,
       y: 3,
       occupiedBy: {
-        name: "player2",
+        name: "",
         kinged: false,
       },
       backgroundColor: "bg-gray-800 bg-opacity-75",
@@ -499,7 +499,7 @@ export const gameboard: Square[][] = [
       x: 1,
       y: 4,
       occupiedBy: {
-        name: "",
+        name: "player1",
         kinged: false,
       },
       backgroundColor: "bg-gray-800 bg-opacity-75",

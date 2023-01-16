@@ -14,7 +14,7 @@ import { gameboard as gb, Square } from "@/utils/data";
 
 export default function Home() {
 	const [gameboard, setGameBoard] = useState(gb);
-	const [currentPlayer, setCurrentPlayer] = useState("player1");
+	const [currentPlayer, setCurrentPlayer] = useState("player2");
 	const [selectedSquare, setSelectedSquare] = useState<any>({
 		square: {
 			occupiedBy: {
@@ -29,10 +29,14 @@ export default function Home() {
 	});
 	const [gameMessage, setGameMessage] = useState("");
 	const [gameConfig, setGameConfig] = useState({
-		whosMoveIsIt: "player1",
+		whosMoveIsIt: "player2",
 	});
 
-	const handleSelection = (squareClicked: Square, x: number, y: number) => {
+	const handlePlayer1Selection = (
+		squareClicked: Square,
+		x: number,
+		y: number
+	) => {
 		//Checks if selectedSqure is not empty
 		if (selectedSquare.square.occupiedBy.name) {
 			if (
@@ -106,185 +110,169 @@ export default function Home() {
 				return;
 			}
 
-		// const possibleMoves = [];
 		const tempMoveOptions = [];
 		const tempClaimOptions = [];
 
-		if (currentPlayer === "player1") {
-			if (gameboard[x + 1][y - 1] && !gameboard[x + 1][y - 1].occupiedBy.name) {
-				console.log("jeahhhh");
-				tempMoveOptions.push(gameboard[x + 1][y - 1].id);
-			}
+		if (gameboard[x + 1][y - 1] && !gameboard[x + 1][y - 1].occupiedBy.name) {
+			console.log("jeahhhh");
+			tempMoveOptions.push(gameboard[x + 1][y - 1].id);
+		}
 
-			if (gameboard[x + 1][y + 1] && !gameboard[x + 1][y + 1].occupiedBy.name) {
-				console.log("jeahhhh");
-				tempMoveOptions.push(gameboard[x + 1][y + 1].id);
-			}
+		if (gameboard[x + 1][y + 1] && !gameboard[x + 1][y + 1].occupiedBy.name) {
+			console.log("jeahhhh");
+			tempMoveOptions.push(gameboard[x + 1][y + 1].id);
+		}
 
-			if (
-				gameboard[x + 2][y - 2] &&
-				!gameboard[x + 2][y - 2].occupiedBy.name &&
-				gameboard[x + 1][y - 1].occupiedBy.name === "player2"
-			) {
-				tempClaimOptions.push(gameboard[x + 2][y - 2].id);
-			}
+		if (
+			gameboard[x + 2][y - 2] &&
+			!gameboard[x + 2][y - 2].occupiedBy.name &&
+			gameboard[x + 1][y - 1].occupiedBy.name === "player2"
+		) {
+			tempClaimOptions.push(gameboard[x + 2][y - 2].id);
+		}
 
-			if (
-				gameboard[x + 2][y + 2] &&
-				!gameboard[x + 2][y + 2].occupiedBy.name &&
-				gameboard[x + 1][y + 1].occupiedBy.name === "player2"
-			) {
-				tempClaimOptions.push(gameboard[x + 2][y + 2].id);
-			}
+		if (
+			gameboard[x + 2][y + 2] &&
+			!gameboard[x + 2][y + 2].occupiedBy.name &&
+			gameboard[x + 1][y + 1].occupiedBy.name === "player2"
+		) {
+			tempClaimOptions.push(gameboard[x + 2][y + 2].id);
+		}
 
-			// console.log("player 1 possibleMoves: ", possibleMoves);
-			if (tempMoveOptions.length || tempClaimOptions.length) {
-				setSelectedSquare({
-					square: { ...squareClicked },
-					moveOptions: [...tempMoveOptions],
-					claimOptions: [...tempClaimOptions],
-				});
-				return;
-			}
+		// console.log("player 1 possibleMoves: ", possibleMoves);
+		if (tempMoveOptions.length || tempClaimOptions.length) {
+			setSelectedSquare({
+				square: { ...squareClicked },
+				moveOptions: [...tempMoveOptions],
+				claimOptions: [...tempClaimOptions],
+			});
+			return;
 		}
 
 		console.log("returning");
 		return;
+	};
 
-		if (y === 0 && gameboard[x + 1][y + 1].occupiedBy.name === currentPlayer) {
-			console.log("left col clicked");
-			return false;
+	const handlePlayer2Selection = (
+		squareClicked: Square,
+		x: number,
+		y: number
+	) => {
+		//Checks if selectedSqure is not empty
+		if (selectedSquare.square.occupiedBy.name) {
+			if (
+				//checks if selectedSquare can simply be moved to new spot
+				selectedSquare.moveOptions.includes(squareClicked.id)
+			) {
+				movePlayer(squareClicked);
+				setSelectedSquare({
+					square: {
+						occupiedBy: {
+							name: "",
+							kinged: false,
+						},
+					},
+					//Will contain an array of square id's that the selected piece can move (No claiming enemys square).
+					moveOptions: [],
+					//Will contain an array of square id's that the selected piece can move (Claiming eneny square)
+					claimOptions: [],
+				});
+			}
+
+			if (selectedSquare.claimOptions.includes(squareClicked.id)) {
+				console.log("squareClicked.col: ", squareClicked.col);
+				console.log("selectedSquare.col: ", selectedSquare.col);
+				if (squareClicked.col < selectedSquare.square.col) {
+					// console.log("INSIDEEEE IF");
+					setSelectedSquare({
+						square: {
+							occupiedBy: {
+								name: "",
+								kinged: false,
+							},
+						},
+						//Will contain an array of square id's that the selected piece can move (No claiming enemys square).
+						moveOptions: [],
+						//Will contain an array of square id's that the selected piece can move (Claiming eneny square)
+						claimOptions: [],
+					});
+					movePlayer(
+						squareClicked,
+						gameboard[selectedSquare.square.row - 1][
+							selectedSquare.square.col - 1
+						].id
+					);
+				} else {
+					console.log("INISIDE OF ELSEEEE");
+					setSelectedSquare({
+						square: {
+							occupiedBy: {
+								name: "",
+								kinged: false,
+							},
+						},
+						//Will contain an array of square id's that the selected piece can move (No claiming enemys square).
+						moveOptions: [],
+						//Will contain an array of square id's that the selected piece can move (Claiming eneny square)
+						claimOptions: [],
+					});
+					movePlayer(
+						squareClicked,
+						gameboard[selectedSquare.square.row - 1][
+							selectedSquare.square.col + 1
+						].id
+					);
+				}
+			}
 		}
 
-		if (y === 7 && gameboard[x + 1][y - 1].occupiedBy.name === currentPlayer) {
-			return false;
+		if (selectedSquare.square)
+			if (squareClicked.occupiedBy.name !== currentPlayer) {
+				return;
+			}
+
+		const tempMoveOptions = [];
+		const tempClaimOptions = [];
+
+		if (gameboard[x - 1][y - 1] && !gameboard[x - 1][y - 1].occupiedBy.name) {
+			console.log("jeahhhh");
+			tempMoveOptions.push(gameboard[x - 1][y - 1].id);
+		}
+
+		if (gameboard[x - 1][y + 1] && !gameboard[x - 1][y + 1].occupiedBy.name) {
+			console.log("jeahhhh");
+			tempMoveOptions.push(gameboard[x - 1][y + 1].id);
 		}
 
 		if (
-			y > 0 &&
-			y < 7 &&
-			gameboard[x + 1][y + 1].occupiedBy.name === currentPlayer &&
-			gameboard[x + 1][y - 1].occupiedBy.name === currentPlayer
+			gameboard[x - 2][y - 2] &&
+			!gameboard[x - 2][y - 2].occupiedBy.name &&
+			gameboard[x - 1][y - 1].occupiedBy.name === "player1"
 		) {
-			return false;
+			tempClaimOptions.push(gameboard[x - 2][y - 2].id);
 		}
 
-		if (y === 0 || y === 1) {
-			if (gameboard[x + 1][y + 1].occupiedBy.name === "player2") {
-				if (gameboard[x + 2][y + 2].occupiedBy.name) {
-					return false;
-				}
-			}
+		if (
+			gameboard[x - 2][y + 2] &&
+			!gameboard[x - 2][y + 2].occupiedBy.name &&
+			gameboard[x - 1][y + 1].occupiedBy.name === "player1"
+		) {
+			tempClaimOptions.push(gameboard[x - 2][y + 2].id);
 		}
 
-		if (y === 7 || y === 6) {
-			if (gameboard[x + 1][y - 1].occupiedBy.name === "player2") {
-				if (gameboard[x + 2][y - 2].occupiedBy.name) {
-					return false;
-				}
-			}
+		// console.log("player 1 possibleMoves: ", possibleMoves);
+		if (tempMoveOptions.length || tempClaimOptions.length) {
+			setSelectedSquare({
+				square: { ...squareClicked },
+				moveOptions: [...tempMoveOptions],
+				claimOptions: [...tempClaimOptions],
+			});
+			return;
 		}
 
-		if (y > 1 && y < 6) {
-			if (
-				gameboard[x + 1][y - 1].occupiedBy.name === "player2" &&
-				gameboard[x + 2][y - 2].occupiedBy.name
-			) {
-				return false;
-			}
-
-			if (
-				gameboard[x + 1][y + 1].occupiedBy.name === "player2" &&
-				gameboard[x + 2][y + 2].occupiedBy.name
-			) {
-				return false;
-			}
-		}
-
-		return true;
+		console.log("returning");
+		return;
 	};
-	// const canPieceClickedBeMoved = (
-	// 	squareClicked: Square,
-	// 	x: number,
-	// 	y: number
-	// ) => {
-	// 	if (squareClicked.occupiedBy.name !== currentPlayer) {
-	// 		return false;
-	// 	}
-
-	// 	if (y === 0 && gameboard[x + 1][y + 1].occupiedBy.name === currentPlayer) {
-	// 		console.log("left col clicked");
-	// 		return false;
-	// 	}
-
-	// 	if (y === 7 && gameboard[x + 1][y - 1].occupiedBy.name === currentPlayer) {
-	// 		return false;
-	// 	}
-
-	// 	if (
-	// 		y > 0 &&
-	// 		y < 7 &&
-	// 		gameboard[x + 1][y + 1].occupiedBy.name === currentPlayer &&
-	// 		gameboard[x + 1][y - 1].occupiedBy.name === currentPlayer
-	// 	) {
-	// 		return false;
-	// 	}
-
-	// 	if (y === 0 || y === 1) {
-	// 		if (gameboard[x + 1][y + 1].occupiedBy.name === "player2") {
-	// 			if (gameboard[x + 2][y + 2].occupiedBy.name) {
-	// 				return false;
-	// 			}
-	// 		}
-	// 	}
-
-	// 	if (y === 7 || y === 6) {
-	// 		if (gameboard[x + 1][y - 1].occupiedBy.name === "player2") {
-	// 			if (gameboard[x + 2][y - 2].occupiedBy.name) {
-	// 				return false;
-	// 			}
-	// 		}
-	// 	}
-
-	// 	if (y > 1 && y < 6) {
-	// 		if (
-	// 			gameboard[x + 1][y - 1].occupiedBy.name === "player2" &&
-	// 			gameboard[x + 2][y - 2].occupiedBy.name
-	// 		) {
-	// 			return false;
-	// 		}
-
-	// 		if (
-	// 			gameboard[x + 1][y + 1].occupiedBy.name === "player2" &&
-	// 			gameboard[x + 2][y + 2].occupiedBy.name
-	// 		) {
-	// 			return false;
-	// 		}
-	// 	}
-
-	// 	return true;
-	// };
-
-	// const removeClaimedSquare = (idOfSquare: number) => {
-	// 	const newGameBoard = gameboard.map((rowArray: any, rowI: number) => {
-	// 		const jeah = rowArray.map((square: any, colI: number) => {
-	// 			if (square.id === idOfSquare) {
-	// 				return {
-	// 					...square,
-	// 					occupiedBy: {
-	// 						...square.occupiedBy,
-	// 						name: "",
-	// 					},
-	// 				};
-	// 			}
-
-	// 			return square;
-	// 		});
-	// 		return jeah;
-	// 	});
-
-	// 	setGameBoard(newGameBoard);
-	// };
 
 	const movePlayer = (
 		squareClicked: any,
@@ -321,7 +309,7 @@ export default function Home() {
 						...square,
 						occupiedBy: {
 							...square.occupiedBy,
-							name: "player1",
+							name: currentPlayer === "player1" ? "player1" : "player2",
 						},
 					};
 				}
@@ -510,16 +498,17 @@ export default function Home() {
 									return (
 										<div
 											onClick={() => {
-												handleSelection(square, rowIndex, colIndex);
+												if (currentPlayer === "player1") {
+													handlePlayer1Selection(square, rowIndex, colIndex);
+												} else {
+													handlePlayer2Selection(square, rowIndex, colIndex);
+												}
 											}}
 											key={colIndex}
 											className={`border border-black w-[100px] h-[100px] flex justify-center items-center ${test}`}
 										>
 											{square.occupiedBy.name && (
 												<div
-													onClick={() => {
-														handleSelection(square, rowIndex, colIndex);
-													}}
 													className={`text-white text-3xl flex justify-center items-center w-3/4 h-3/4 rounded-full  ${
 														square.occupiedBy.name === "player1"
 															? " bg-black"
