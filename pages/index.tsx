@@ -12,21 +12,38 @@ import { gameboard as gb, Square } from "@/utils/data";
 //     If no return
 //     If yes setSelectedSquare to the clicked square
 
+const noSelectedSquare = {
+	square: {
+		id: -1,
+		x: -1,
+		y: -1,
+		occupiedBy: {
+			name: "",
+			kinged: false,
+		},
+		backgroundColor: "",
+		selected: false,
+		movable: false,
+		row: -1,
+		col: -1,
+	},
+	//Will contain an array of square id's that the selected piece can move (No claiming enemys square).
+	moveOptions: [],
+	//Will contain an array of square id's that the selected piece can move (Claiming eneny square)
+	claimOptions: [],
+};
+
 export default function Home() {
 	const [gameboard, setGameBoard] = useState(gb);
 	const [currentPlayer, setCurrentPlayer] = useState("player2");
-	const [selectedSquare, setSelectedSquare] = useState<any>({
-		square: {
-			occupiedBy: {
-				name: "",
-				kinged: false,
-			},
-		},
-		//Will contain an array of square id's that the selected piece can move (No claiming enemys square).
-		moveOptions: [],
-		//Will contain an array of square id's that the selected piece can move (Claiming eneny square)
-		claimOptions: [],
-	});
+	const switchPlayer = () => {
+		if (currentPlayer === "player2") {
+			setCurrentPlayer("player1");
+		} else {
+			setCurrentPlayer("player2");
+		}
+	};
+	const [selectedSquare, setSelectedSquare] = useState<any>(noSelectedSquare);
 	const [gameMessage, setGameMessage] = useState("");
 	const [gameConfig, setGameConfig] = useState({
 		whosMoveIsIt: "player2",
@@ -44,23 +61,15 @@ export default function Home() {
 				selectedSquare.moveOptions.includes(squareClicked.id)
 			) {
 				movePlayer(squareClicked);
-				setSelectedSquare({
-					square: {
-						occupiedBy: {
-							name: "",
-							kinged: false,
-						},
-					},
-					//Will contain an array of square id's that the selected piece can move (No claiming enemys square).
-					moveOptions: [],
-					//Will contain an array of square id's that the selected piece can move (Claiming eneny square)
-					claimOptions: [],
-				});
+				setSelectedSquare(noSelectedSquare);
+				switchPlayer();
 			}
 
 			if (selectedSquare.claimOptions.includes(squareClicked.id)) {
 				console.log("squareClicked.col: ", squareClicked.col);
 				console.log("selectedSquare.col: ", selectedSquare.col);
+
+				//Can Either go left or right so this if else is determining which way it goes
 				if (squareClicked.col < selectedSquare.square.col) {
 					// console.log("INSIDEEEE IF");
 					setSelectedSquare({
@@ -158,6 +167,7 @@ export default function Home() {
 		x: number,
 		y: number
 	) => {
+		console.log("squareClicked: ", squareClicked);
 		//Checks if selectedSqure is not empty
 		if (selectedSquare.square.occupiedBy.name) {
 			if (
@@ -177,6 +187,7 @@ export default function Home() {
 					//Will contain an array of square id's that the selected piece can move (Claiming eneny square)
 					claimOptions: [],
 				});
+				switchPlayer();
 			}
 
 			if (selectedSquare.claimOptions.includes(squareClicked.id)) {
@@ -186,10 +197,7 @@ export default function Home() {
 					// console.log("INSIDEEEE IF");
 					setSelectedSquare({
 						square: {
-							occupiedBy: {
-								name: "",
-								kinged: false,
-							},
+							...squareClicked,
 						},
 						//Will contain an array of square id's that the selected piece can move (No claiming enemys square).
 						moveOptions: [],
@@ -206,10 +214,7 @@ export default function Home() {
 					console.log("INISIDE OF ELSEEEE");
 					setSelectedSquare({
 						square: {
-							occupiedBy: {
-								name: "",
-								kinged: false,
-							},
+							...squareClicked,
 						},
 						//Will contain an array of square id's that the selected piece can move (No claiming enemys square).
 						moveOptions: [],
