@@ -24,6 +24,7 @@ export default function Home() {
 		x: number,
 		y: number
 	) => {
+		console.log("in here");
 		if (squareClicked.occupiedBy.name !== currentPlayer) {
 			return false;
 		}
@@ -71,7 +72,31 @@ export default function Home() {
 		return true;
 	};
 
-	const movePlayer = (squareClicked: any) => {
+	const removeClaimedSquare = (idOfSquare: number) => {
+		const newGameBoard = gameboard.map((rowArray: any, rowI: number) => {
+			const jeah = rowArray.map((square: any, colI: number) => {
+				if (square.id === idOfSquare) {
+					return {
+						...square,
+						occupiedBy: {
+							...square.occupiedBy,
+							name: "",
+						},
+					};
+				}
+
+				return square;
+			});
+			return jeah;
+		});
+
+		setGameBoard(newGameBoard);
+	};
+
+	const movePlayer = (
+		squareClicked: any,
+		removePlayerFromId: number | undefined
+	) => {
 		console.log("inside movePlayer");
 		const placeHolder = { ...selectedSquare };
 
@@ -79,6 +104,16 @@ export default function Home() {
 		const newGameBoard = gameboard.map((rowArray: any, rowI: number) => {
 			const jeah = rowArray.map((square: any, colI: number) => {
 				if (square.id === selectedSquare.id) {
+					return {
+						...square,
+						occupiedBy: {
+							...square.occupiedBy,
+							name: "",
+						},
+					};
+				}
+
+				if (removePlayerFromId && square.id === removePlayerFromId) {
 					return {
 						...square,
 						occupiedBy: {
@@ -127,6 +162,7 @@ export default function Home() {
 		// );
 
 		if (selectedSquare.col === 0) {
+			//NOT CLAIMING SQUARE
 			if (
 				gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id ===
 					squareClicked.id &&
@@ -137,8 +173,10 @@ export default function Home() {
 				console.log("IN HERERERE");
 				console.log("moving");
 				movePlayer(squareClicked);
+				return;
 			}
 
+			//CLAIMING SQUARE
 			if (
 				gameboard[selectedSquare.row + 2][selectedSquare.col + 2].id ===
 					squareClicked.id &&
@@ -147,9 +185,17 @@ export default function Home() {
 			) {
 				// MOVING 2 down and 2 right
 				//HANDLE THIS
-				console.log("Claiming Piece");
+				// removeClaimedSquare(
+				// 	gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id
+				// );
+				movePlayer(
+					squareClicked,
+					gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id
+				);
+				return;
 			}
 		} else if (selectedSquare.col === 7) {
+			//NOT CLAIMING SQUARE
 			if (
 				gameboard[selectedSquare.row + 1][selectedSquare.col - 1].id ===
 					squareClicked.id &&
@@ -158,8 +204,29 @@ export default function Home() {
 			) {
 				console.log("moving");
 				movePlayer(squareClicked);
+				return;
+			}
+
+			//CLAIMING SQUARE
+			if (
+				gameboard[selectedSquare.row + 2][selectedSquare.col - 2].id ===
+					squareClicked.id &&
+				gameboard[selectedSquare.row + 1][selectedSquare.col - 1].occupiedBy
+					.name === "player2"
+			) {
+				// MOVING 2 down and 2 right
+				//HANDLE THIS
+				movePlayer(
+					squareClicked,
+					gameboard[selectedSquare.row + 1][selectedSquare.col - 1].id
+				);
+				return;
+				// removeClaimedSquare(
+				// 	gameboard[selectedSquare.row + 1][selectedSquare.col - 1].id
+				// );
 			}
 		} else {
+			//NOT Claiming any pieces
 			if (
 				(gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id ===
 					squareClicked.id &&
@@ -171,6 +238,40 @@ export default function Home() {
 						.name === "")
 			) {
 				movePlayer(squareClicked);
+				return;
+			}
+
+			//CLAIMING PIECE
+			if (
+				gameboard[selectedSquare.row + 2][selectedSquare.col + 2].id ===
+					squareClicked.id &&
+				gameboard[selectedSquare.row + 1][selectedSquare.col + 1].occupiedBy
+					.name === "player2"
+			) {
+				// removeClaimedSquare(
+				// 	gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id
+				// );
+				movePlayer(
+					squareClicked,
+					gameboard[selectedSquare.row + 1][selectedSquare.col + 1].id
+				);
+				return;
+			}
+
+			if (
+				gameboard[selectedSquare.row + 2][selectedSquare.col - 2].id ===
+					squareClicked.id &&
+				gameboard[selectedSquare.row + 1][selectedSquare.col - 1].occupiedBy
+					.name === "player2"
+			) {
+				// removeClaimedSquare(
+				// 	gameboard[selectedSquare.row + 1][selectedSquare.col - 1].id
+				// );
+				movePlayer(
+					squareClicked,
+					gameboard[selectedSquare.row + 1][selectedSquare.col - 1].id
+				);
+				return;
 			}
 		}
 
@@ -243,10 +344,7 @@ export default function Home() {
 
 				<button
 					onClick={() => {
-						if (1 === 1) {
-							let f = { g: () => 1 };
-							console.log("JEAHHHHH: ", typeof f);
-						}
+						// removeClaimedSquare(30);
 					}}
 				>
 					HEREEREEr

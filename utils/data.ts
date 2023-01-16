@@ -453,7 +453,7 @@ export const gameboard: Square[][] = [
       x: 6,
       y: 3,
       occupiedBy: {
-        name: "",
+        name: "player2",
         kinged: false,
       },
       backgroundColor: "bg-gray-800 bg-opacity-75",
