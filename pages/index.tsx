@@ -45,9 +45,105 @@ export default function Home() {
 	};
 	const [selectedSquare, setSelectedSquare] = useState<any>(noSelectedSquare);
 	const [gameMessage, setGameMessage] = useState("");
-	const [gameConfig, setGameConfig] = useState({
-		whosMoveIsIt: "player2",
-	});
+
+	const waitForNewMoveOptions = (
+		x: number,
+		y: number,
+		pieceWasClaimed: boolean
+	) => {
+		return new Promise((resolve) => {
+			const returnObject = setNewMoveOptions(x, y, pieceWasClaimed);
+			resolve(returnObject);
+		});
+	};
+	const setNewMoveOptions = (
+		x: number,
+		y: number,
+		pieceWasClaimed: boolean
+	) => {
+		const tempMoveOptions = [];
+		const tempClaimOptions = [];
+		if (currentPlayer === "player1") {
+			if (!pieceWasClaimed) {
+				if (
+					gameboard[x + 1][y - 1] &&
+					!gameboard[x + 1][y - 1].occupiedBy.name
+				) {
+					console.log("jeahhhh");
+					tempMoveOptions.push(gameboard[x + 1][y - 1].id);
+				}
+
+				if (
+					gameboard[x + 1][y + 1] &&
+					!gameboard[x + 1][y + 1].occupiedBy.name
+				) {
+					console.log("jeahhhh");
+					tempMoveOptions.push(gameboard[x + 1][y + 1].id);
+				}
+			}
+
+			if (x < 6) {
+				if (
+					gameboard[x + 2][y - 2] &&
+					!gameboard[x + 2][y - 2].occupiedBy.name &&
+					gameboard[x + 1][y - 1].occupiedBy.name === "player2"
+				) {
+					tempClaimOptions.push(gameboard[x + 2][y - 2].id);
+				}
+
+				if (
+					gameboard[x + 2][y + 2] &&
+					!gameboard[x + 2][y + 2].occupiedBy.name &&
+					gameboard[x + 1][y + 1].occupiedBy.name === "player2"
+				) {
+					tempClaimOptions.push(gameboard[x + 2][y + 2].id);
+				}
+			}
+		} else {
+			if (!pieceWasClaimed) {
+				if (
+					gameboard[x - 1][y - 1] &&
+					!gameboard[x - 1][y - 1].occupiedBy.name
+				) {
+					console.log("jeahhhh");
+					tempMoveOptions.push(gameboard[x - 1][y - 1].id);
+				}
+
+				if (
+					gameboard[x - 1][y + 1] &&
+					!gameboard[x - 1][y + 1].occupiedBy.name
+				) {
+					console.log("jeahhhh");
+					tempMoveOptions.push(gameboard[x - 1][y + 1].id);
+				}
+			}
+
+			if (x > 1) {
+				if (
+					gameboard[x - 2][y - 2] &&
+					!gameboard[x - 2][y - 2].occupiedBy.name &&
+					gameboard[x - 1][y - 1].occupiedBy.name === "player1"
+				) {
+					tempClaimOptions.push(gameboard[x - 2][y - 2].id);
+				}
+
+				if (
+					gameboard[x - 2][y + 2] &&
+					!gameboard[x - 2][y + 2].occupiedBy.name &&
+					gameboard[x - 1][y + 1].occupiedBy.name === "player1"
+				) {
+					tempClaimOptions.push(gameboard[x - 2][y + 2].id);
+				}
+			}
+		}
+
+		const returnObject = {
+			moveOptions: [...tempMoveOptions],
+			claimOptions: [...tempClaimOptions],
+		};
+
+		return returnObject;
+	};
 
 	const handlePlayer1Selection = (
 		squareClicked: Square,
@@ -60,7 +156,7 @@ export default function Home() {
 				//checks if selectedSquare can simply be moved to new spot
 				selectedSquare.moveOptions.includes(squareClicked.id)
 			) {
-				movePlayer(squareClicked);
+				movePlayer(squareClicked, undefined);
 				setSelectedSquare(noSelectedSquare);
 				switchPlayer();
 			}
@@ -71,45 +167,77 @@ export default function Home() {
 
 				//Can Either go left or right so this if else is determining which way it goes
 				if (squareClicked.col < selectedSquare.square.col) {
-					// console.log("INSIDEEEE IF");
-					setSelectedSquare({
-						square: {
-							occupiedBy: {
-								name: "",
-								kinged: false,
+					Promise.resolve().then(async () => {
+						movePlayer(
+							squareClicked,
+							gameboard[selectedSquare.square.row + 1][
+								selectedSquare.square.col - 1
+							].id
+						);
+						setSelectedSquare({
+							square: {
+								...squareClicked,
 							},
-						},
-						//Will contain an array of square id's that the selected piece can move (No claiming enemys square).
-						moveOptions: [],
-						//Will contain an array of square id's that the selected piece can move (Claiming eneny square)
-						claimOptions: [],
+							//Will contain an array of square id's that the selected piece can move (No claiming enemys square).
+							moveOptions: [],
+							//Will contain an array of square id's that the selected piece can move (Claiming eneny square)
+							claimOptions: [],
+						});
+						const { moveOptions, claimOptions } = await waitForNewMoveOptions(
+							squareClicked.row,
+							squareClicked.col,
+							true
+						);
+
+						console.log("moveOptions: ", moveOptions);
+						console.log("claimOptions: ", claimOptions);
+						if (moveOptions.length || claimOptions.length) {
+							setSelectedSquare({
+								...selectedSquare,
+								moveOptions: [...moveOptions],
+								claimOptions: [...claimOptions],
+							});
+						} else {
+							setSelectedSquare(noSelectedSquare);
+							switchPlayer();
+						}
 					});
-					movePlayer(
-						squareClicked,
-						gameboard[selectedSquare.square.row + 1][
-							selectedSquare.square.col - 1
-						].id
-					);
 				} else {
-					console.log("INISIDE OF ELSEEEE");
-					setSelectedSquare({
-						square: {
-							occupiedBy: {
-								name: "",
-								kinged: false,
+					Promise.resolve().then(async () => {
+						movePlayer(
+							squareClicked,
+							gameboard[selectedSquare.square.row + 1][
+								selectedSquare.square.col + 1
+							].id
+						);
+						setSelectedSquare({
+							square: {
+								...squareClicked,
 							},
-						},
-						//Will contain an array of square id's that the selected piece can move (No claiming enemys square).
-						moveOptions: [],
-						//Will contain an array of square id's that the selected piece can move (Claiming eneny square)
-						claimOptions: [],
+							//Will contain an array of square id's that the selected piece can move (No claiming enemys square).
+							moveOptions: [],
+							//Will contain an array of square id's that the selected piece can move (Claiming eneny square)
+							claimOptions: [],
+						});
+						const { moveOptions, claimOptions } = await waitForNewMoveOptions(
+							squareClicked.row,
+							squareClicked.col,
+							true
+						);
+
+						console.log("moveOptions: ", moveOptions);
+						console.log("claimOptions: ", claimOptions);
+						if (moveOptions.length || claimOptions.length) {
+							setSelectedSquare({
+								...selectedSquare,
+								moveOptions: [...moveOptions],
+								claimOptions: [...claimOptions],
+							});
+						} else {
+							setSelectedSquare(noSelectedSquare);
+							switchPlayer();
+						}
 					});
-					movePlayer(
-						squareClicked,
-						gameboard[selectedSquare.square.row + 1][
-							selectedSquare.square.col + 1
-						].id
-					);
 				}
 			}
 		}
@@ -119,41 +247,21 @@ export default function Home() {
 				return;
 			}
 
-		const tempMoveOptions = [];
-		const tempClaimOptions = [];
+		// const tempMoveOptions = [];
+		// const tempClaimOptions = [];
 
-		if (gameboard[x + 1][y - 1] && !gameboard[x + 1][y - 1].occupiedBy.name) {
-			console.log("jeahhhh");
-			tempMoveOptions.push(gameboard[x + 1][y - 1].id);
-		}
-
-		if (gameboard[x + 1][y + 1] && !gameboard[x + 1][y + 1].occupiedBy.name) {
-			console.log("jeahhhh");
-			tempMoveOptions.push(gameboard[x + 1][y + 1].id);
-		}
-
-		if (
-			gameboard[x + 2][y - 2] &&
-			!gameboard[x + 2][y - 2].occupiedBy.name &&
-			gameboard[x + 1][y - 1].occupiedBy.name === "player2"
-		) {
-			tempClaimOptions.push(gameboard[x + 2][y - 2].id);
-		}
-
-		if (
-			gameboard[x + 2][y + 2] &&
-			!gameboard[x + 2][y + 2].occupiedBy.name &&
-			gameboard[x + 1][y + 1].occupiedBy.name === "player2"
-		) {
-			tempClaimOptions.push(gameboard[x + 2][y + 2].id);
-		}
+		const { moveOptions, claimOptions } = setNewMoveOptions(
+			squareClicked.row,
+			squareClicked.col,
+			false
+		);
 
 		// console.log("player 1 possibleMoves: ", possibleMoves);
-		if (tempMoveOptions.length || tempClaimOptions.length) {
+		if (moveOptions.length || claimOptions.length) {
 			setSelectedSquare({
 				square: { ...squareClicked },
-				moveOptions: [...tempMoveOptions],
-				claimOptions: [...tempClaimOptions],
+				moveOptions: [...moveOptions],
+				claimOptions: [...claimOptions],
 			});
 			return;
 		}
@@ -162,7 +270,7 @@ export default function Home() {
 		return;
 	};
 
-	const handlePlayer2Selection = (
+	const handlePlayer2Selection = async (
 		squareClicked: Square,
 		x: number,
 		y: number
@@ -174,59 +282,89 @@ export default function Home() {
 				//checks if selectedSquare can simply be moved to new spot
 				selectedSquare.moveOptions.includes(squareClicked.id)
 			) {
+				console.log("moveOptions contains this square");
 				movePlayer(squareClicked);
-				setSelectedSquare({
-					square: {
-						occupiedBy: {
-							name: "",
-							kinged: false,
-						},
-					},
-					//Will contain an array of square id's that the selected piece can move (No claiming enemys square).
-					moveOptions: [],
-					//Will contain an array of square id's that the selected piece can move (Claiming eneny square)
-					claimOptions: [],
-				});
+				setSelectedSquare(noSelectedSquare);
 				switchPlayer();
 			}
 
 			if (selectedSquare.claimOptions.includes(squareClicked.id)) {
+				console.log("claimOptions contains this square");
 				console.log("squareClicked.col: ", squareClicked.col);
 				console.log("selectedSquare.col: ", selectedSquare.col);
 				if (squareClicked.col < selectedSquare.square.col) {
-					// console.log("INSIDEEEE IF");
-					setSelectedSquare({
-						square: {
-							...squareClicked,
-						},
-						//Will contain an array of square id's that the selected piece can move (No claiming enemys square).
-						moveOptions: [],
-						//Will contain an array of square id's that the selected piece can move (Claiming eneny square)
-						claimOptions: [],
+					Promise.resolve().then(async () => {
+						movePlayer(
+							squareClicked,
+							gameboard[selectedSquare.square.row - 1][
+								selectedSquare.square.col - 1
+							].id
+						);
+						setSelectedSquare({
+							square: {
+								...squareClicked,
+							},
+							//Will contain an array of square id's that the selected piece can move (No claiming enemys square).
+							moveOptions: [],
+							//Will contain an array of square id's that the selected piece can move (Claiming eneny square)
+							claimOptions: [],
+						});
+						const { moveOptions, claimOptions } = await waitForNewMoveOptions(
+							squareClicked.row,
+							squareClicked.col,
+							true
+						);
+
+						console.log("moveOptions: ", moveOptions);
+						console.log("claimOptions: ", claimOptions);
+						if (moveOptions.length || claimOptions.length) {
+							setSelectedSquare({
+								...selectedSquare,
+								moveOptions: [...moveOptions],
+								claimOptions: [...claimOptions],
+							});
+						} else {
+							setSelectedSquare(noSelectedSquare);
+							switchPlayer();
+						}
 					});
-					movePlayer(
-						squareClicked,
-						gameboard[selectedSquare.square.row - 1][
-							selectedSquare.square.col - 1
-						].id
-					);
 				} else {
-					console.log("INISIDE OF ELSEEEE");
-					setSelectedSquare({
-						square: {
-							...squareClicked,
-						},
-						//Will contain an array of square id's that the selected piece can move (No claiming enemys square).
-						moveOptions: [],
-						//Will contain an array of square id's that the selected piece can move (Claiming eneny square)
-						claimOptions: [],
+					Promise.resolve().then(async () => {
+						movePlayer(
+							squareClicked,
+							gameboard[selectedSquare.square.row - 1][
+								selectedSquare.square.col + 1
+							].id
+						);
+						setSelectedSquare({
+							square: {
+								...squareClicked,
+							},
+							//Will contain an array of square id's that the selected piece can move (No claiming enemys square).
+							moveOptions: [],
+							//Will contain an array of square id's that the selected piece can move (Claiming eneny square)
+							claimOptions: [],
+						});
+						const { moveOptions, claimOptions } = await waitForNewMoveOptions(
+							squareClicked.row,
+							squareClicked.col,
+							true
+						);
+
+						if (moveOptions.length || claimOptions.length) {
+							console.log("inside if $$");
+							setSelectedSquare({
+								...selectedSquare,
+								square: { ...squareClicked },
+								moveOptions: [...moveOptions],
+								claimOptions: [...claimOptions],
+							});
+						} else {
+							console.log("inside of else $$");
+							setSelectedSquare(noSelectedSquare);
+							switchPlayer();
+						}
 					});
-					movePlayer(
-						squareClicked,
-						gameboard[selectedSquare.square.row - 1][
-							selectedSquare.square.col + 1
-						].id
-					);
 				}
 			}
 		}
@@ -236,46 +374,21 @@ export default function Home() {
 				return;
 			}
 
-		const tempMoveOptions = [];
-		const tempClaimOptions = [];
+		const { moveOptions, claimOptions } = setNewMoveOptions(
+			squareClicked.row,
+			squareClicked.col,
+			false
+		);
 
-		if (gameboard[x - 1][y - 1] && !gameboard[x - 1][y - 1].occupiedBy.name) {
-			console.log("jeahhhh");
-			tempMoveOptions.push(gameboard[x - 1][y - 1].id);
-		}
-
-		if (gameboard[x - 1][y + 1] && !gameboard[x - 1][y + 1].occupiedBy.name) {
-			console.log("jeahhhh");
-			tempMoveOptions.push(gameboard[x - 1][y + 1].id);
-		}
-
-		if (
-			gameboard[x - 2][y - 2] &&
-			!gameboard[x - 2][y - 2].occupiedBy.name &&
-			gameboard[x - 1][y - 1].occupiedBy.name === "player1"
-		) {
-			tempClaimOptions.push(gameboard[x - 2][y - 2].id);
-		}
-
-		if (
-			gameboard[x - 2][y + 2] &&
-			!gameboard[x - 2][y + 2].occupiedBy.name &&
-			gameboard[x - 1][y + 1].occupiedBy.name === "player1"
-		) {
-			tempClaimOptions.push(gameboard[x - 2][y + 2].id);
-		}
-
-		// console.log("player 1 possibleMoves: ", possibleMoves);
-		if (tempMoveOptions.length || tempClaimOptions.length) {
+		if (moveOptions.length || claimOptions.length) {
 			setSelectedSquare({
 				square: { ...squareClicked },
-				moveOptions: [...tempMoveOptions],
-				claimOptions: [...tempClaimOptions],
+				moveOptions: [...moveOptions],
+				claimOptions: [...claimOptions],
 			});
 			return;
 		}
 
-		console.log("returning");
 		return;
 	};
 
@@ -283,7 +396,7 @@ export default function Home() {
 		squareClicked: any,
 		removePlayerFromId: number | undefined
 	) => {
-		console.log("inside movePlayer");
+		console.log("squareClicked.row: ", squareClicked.row);
 		const placeHolder = { ...selectedSquare };
 
 		// const movePlayer = () => {
@@ -310,6 +423,25 @@ export default function Home() {
 				}
 
 				if (square.id === squareClicked.id) {
+					if (currentPlayer === "player1" && squareClicked.row === 7) {
+						return {
+							...square,
+							occupiedBy: {
+								name: "player1",
+								kinged: true,
+							},
+						};
+					}
+
+					if (currentPlayer === "player2" && squareClicked.row === 0) {
+						return {
+							...square,
+							occupiedBy: {
+								name: "player2",
+								kinged: true,
+							},
+						};
+					}
 					return {
 						...square,
 						occupiedBy: {
@@ -520,11 +652,11 @@ export default function Home() {
 															: "bg-red-500"
 													} ${
 														square.id === selectedSquare.square.id
-															? "border-2 border-purple-500"
+															? " border-8 border-purple-500"
 															: ""
 													}`}
 												>
-													{square.id}
+													{square.occupiedBy.kinged ? "K" : square.id}
 												</div>
 											)}
 										</div>
