@@ -63,76 +63,358 @@ export default function Home() {
 	) => {
 		const tempMoveOptions = [];
 		const tempClaimOptions = [];
-		if (currentPlayer === "player1") {
-			if (!pieceWasClaimed) {
-				if (
-					gameboard[x + 1][y - 1] &&
-					!gameboard[x + 1][y - 1].occupiedBy.name
-				) {
-					console.log("jeahhhh");
+
+		//IF THE PIECE IS NOT KINGED
+		if (!gameboard[x][y].occupiedBy.kinged) {
+			console.log("piece not kinged");
+			if (currentPlayer === "player1") {
+				if (!pieceWasClaimed) {
+					if (
+						gameboard[x + 1][y - 1] &&
+						!gameboard[x + 1][y - 1].occupiedBy.name
+					) {
+						console.log("jeahhhh");
+						tempMoveOptions.push(gameboard[x + 1][y - 1].id);
+					}
+
+					if (
+						gameboard[x + 1][y + 1] &&
+						!gameboard[x + 1][y + 1].occupiedBy.name
+					) {
+						console.log("jeahhhh");
+						tempMoveOptions.push(gameboard[x + 1][y + 1].id);
+					}
+				}
+
+				if (x < 6) {
+					if (
+						gameboard[x + 2][y - 2] &&
+						!gameboard[x + 2][y - 2].occupiedBy.name &&
+						gameboard[x + 1][y - 1].occupiedBy.name === "player2"
+					) {
+						tempClaimOptions.push(gameboard[x + 2][y - 2].id);
+					}
+
+					if (
+						gameboard[x + 2][y + 2] &&
+						!gameboard[x + 2][y + 2].occupiedBy.name &&
+						gameboard[x + 1][y + 1].occupiedBy.name === "player2"
+					) {
+						tempClaimOptions.push(gameboard[x + 2][y + 2].id);
+					}
+				}
+			} else {
+				if (!pieceWasClaimed) {
+					if (
+						gameboard[x - 1][y - 1] &&
+						!gameboard[x - 1][y - 1].occupiedBy.name
+					) {
+						console.log("jeahhhh");
+						tempMoveOptions.push(gameboard[x - 1][y - 1].id);
+					}
+
+					if (
+						gameboard[x - 1][y + 1] &&
+						!gameboard[x - 1][y + 1].occupiedBy.name
+					) {
+						console.log("jeahhhh");
+						tempMoveOptions.push(gameboard[x - 1][y + 1].id);
+					}
+				}
+
+				if (x > 1) {
+					if (
+						gameboard[x - 2][y - 2] &&
+						!gameboard[x - 2][y - 2].occupiedBy.name &&
+						gameboard[x - 1][y - 1].occupiedBy.name === "player1"
+					) {
+						tempClaimOptions.push(gameboard[x - 2][y - 2].id);
+					}
+
+					if (
+						gameboard[x - 2][y + 2] &&
+						!gameboard[x - 2][y + 2].occupiedBy.name &&
+						gameboard[x - 1][y + 1].occupiedBy.name === "player1"
+					) {
+						tempClaimOptions.push(gameboard[x - 2][y + 2].id);
+					}
+				}
+			}
+
+			//If the piece IS Kinged
+		} else {
+			console.log("piece is kinged");
+
+			//NO PICE WAS CLAIMED ONLY MOVING 1 SQUARE
+
+			console.log("inside KING - NO SQUARE CLAIMED");
+			if (x === 0) {
+				if (y === 0) {
+					//This spot will never be occupied this case will never happen.
+					//Leaving it for logic
+				} else if (y === 7) {
+					if (!gameboard[x + 1][y - 1].occupiedBy.name) {
+						tempMoveOptions.push(gameboard[x + 1][y - 1].id);
+					}
+				} else {
+					if (!gameboard[x + 1][y - 1].occupiedBy.name) {
+						tempMoveOptions.push(gameboard[x + 1][y - 1].id);
+					}
+					if (!gameboard[x + 1][y + 1].occupiedBy.name) {
+						tempMoveOptions.push(gameboard[x + 1][y + 1].id);
+					}
+				}
+			} else if (x === 7) {
+				if (y === 0) {
+					if (!gameboard[x - 1][y + 1].occupiedBy.name) {
+						tempMoveOptions.push(gameboard[x - 1][y + 1].id);
+					}
+				} else if (y === 7) {
+					//This spot will never be occupied this case will never happen.
+					//Leaving it for logic
+				} else {
+					if (!gameboard[x - 1][y - 1].occupiedBy.name) {
+						tempMoveOptions.push(gameboard[x - 1][y - 1].id);
+					}
+					if (!gameboard[x - 1][y + 1].occupiedBy.name) {
+						tempMoveOptions.push(gameboard[x - 1][y + 1].id);
+					}
+				}
+			} else {
+				if (!gameboard[x + 1][y + 1].occupiedBy.name) {
+					tempMoveOptions.push(gameboard[x + 1][y + 1].id);
+				}
+
+				if (!gameboard[x + 1][y - 1].occupiedBy.name) {
 					tempMoveOptions.push(gameboard[x + 1][y - 1].id);
 				}
 
-				if (
-					gameboard[x + 1][y + 1] &&
-					!gameboard[x + 1][y + 1].occupiedBy.name
-				) {
-					console.log("jeahhhh");
-					tempMoveOptions.push(gameboard[x + 1][y + 1].id);
-				}
-			}
-
-			if (x < 6) {
-				if (
-					gameboard[x + 2][y - 2] &&
-					!gameboard[x + 2][y - 2].occupiedBy.name &&
-					gameboard[x + 1][y - 1].occupiedBy.name === "player2"
-				) {
-					tempClaimOptions.push(gameboard[x + 2][y - 2].id);
-				}
-
-				if (
-					gameboard[x + 2][y + 2] &&
-					!gameboard[x + 2][y + 2].occupiedBy.name &&
-					gameboard[x + 1][y + 1].occupiedBy.name === "player2"
-				) {
-					tempClaimOptions.push(gameboard[x + 2][y + 2].id);
-				}
-			}
-		} else {
-			if (!pieceWasClaimed) {
-				if (
-					gameboard[x - 1][y - 1] &&
-					!gameboard[x - 1][y - 1].occupiedBy.name
-				) {
-					console.log("jeahhhh");
-					tempMoveOptions.push(gameboard[x - 1][y - 1].id);
-				}
-
-				if (
-					gameboard[x - 1][y + 1] &&
-					!gameboard[x - 1][y + 1].occupiedBy.name
-				) {
-					console.log("jeahhhh");
+				if (!gameboard[x - 1][y + 1].occupiedBy.name) {
 					tempMoveOptions.push(gameboard[x - 1][y + 1].id);
 				}
-			}
 
-			if (x > 1) {
-				if (
-					gameboard[x - 2][y - 2] &&
-					!gameboard[x - 2][y - 2].occupiedBy.name &&
-					gameboard[x - 1][y - 1].occupiedBy.name === "player1"
-				) {
-					tempClaimOptions.push(gameboard[x - 2][y - 2].id);
+				if (!gameboard[x - 1][y - 1].occupiedBy.name) {
+					tempMoveOptions.push(gameboard[x - 1][y - 1].id);
 				}
+			}
+			//YOU JUST CLAIMED AN OPPONENT
+			//GOING TO CHECK FOR OPPONENTS 1 SQUARE AWAY AND A EMPTY SQUARE BEHIND THOSE.
 
-				if (
-					gameboard[x - 2][y + 2] &&
-					!gameboard[x - 2][y + 2].occupiedBy.name &&
-					gameboard[x - 1][y + 1].occupiedBy.name === "player1"
-				) {
-					tempClaimOptions.push(gameboard[x - 2][y + 2].id);
+			console.log("inside of KING - PIECE WAS CLAIMED");
+			//TWO DIFFERENT CASES FOR BOTH PLAYER1 AND PLAYER2
+			if (currentPlayer === "player1") {
+				if (x === 0) {
+					if (y < 2) {
+						//piece will never end up here
+						//leaving block and comment for logic purpose
+					} else if (y > 5) {
+						if (
+							gameboard[x + 1][y - 1].occupiedBy.name === "player2" &&
+							!gameboard[x + 2][y - 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x + 2][y - 2].id);
+						}
+					} else if (y > 1 && y < 6) {
+						if (
+							gameboard[x + 1][y - 1].occupiedBy.name === "player2" &&
+							!gameboard[x + 2][y - 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x + 2][y - 2].id);
+						}
+
+						if (
+							gameboard[x + 1][y + 1].occupiedBy.name === "player2" &&
+							!gameboard[x + 2][y + 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x + 2][y + 2].id);
+						}
+					}
+				} else if (x === 7) {
+					if (y < 2) {
+						if (
+							gameboard[x - 1][y + 1].occupiedBy.name === "player2" &&
+							!gameboard[x - 2][y + 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x - 2][y + 2].id);
+						}
+					} else if (y > 5) {
+						//piece will never end up here
+						//leaving block and comment for logic purpose
+					} else if (y > 1 && y < 6) {
+						if (
+							gameboard[x - 1][y - 1].occupiedBy.name === "player2" &&
+							!gameboard[x - 2][y - 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x - 2][y - 2].id);
+						}
+
+						if (
+							gameboard[x - 1][y + 1].occupiedBy.name === "player2" &&
+							!gameboard[x - 2][y + 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x - 2][y + 2].id);
+						}
+					}
+				} else {
+					if (y < 2) {
+						if (
+							gameboard[x + 1][y + 1].occupiedBy.name === "player2" &&
+							!gameboard[x + 2][y + 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x + 2][y + 2].id);
+						}
+						if (
+							gameboard[x - 1][y + 1].occupiedBy.name === "player2" &&
+							!gameboard[x - 2][y + 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x - 2][y + 2].id);
+						}
+					} else if (y > 5) {
+						if (
+							gameboard[x + 1][y - 1].occupiedBy.name === "player2" &&
+							!gameboard[x + 2][y - 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x + 2][y - 2].id);
+						}
+						if (
+							gameboard[x - 1][y - 1].occupiedBy.name === "player2" &&
+							!gameboard[x - 2][y - 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x - 2][y - 2].id);
+						}
+					} else {
+						if (
+							gameboard[x + 1][y + 1].occupiedBy.name === "player2" &&
+							!gameboard[x + 2][y + 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x + 2][y + 2].id);
+						}
+						if (
+							gameboard[x - 1][y + 1].occupiedBy.name === "player2" &&
+							!gameboard[x - 2][y + 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x - 2][y + 2].id);
+						}
+						if (
+							gameboard[x + 1][y - 1].occupiedBy.name === "player2" &&
+							!gameboard[x + 2][y - 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x + 2][y - 2].id);
+						}
+						if (
+							gameboard[x - 1][y - 1].occupiedBy.name === "player2" &&
+							!gameboard[x - 2][y - 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x - 2][y - 2].id);
+						}
+					}
+				}
+			} else {
+				if (x === 0) {
+					if (y < 2) {
+						//piece will never end up here
+						//leaving block and comment for logic purpose
+					} else if (y > 5) {
+						if (
+							gameboard[x + 1][y - 1].occupiedBy.name === "player1" &&
+							!gameboard[x + 2][y - 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x + 2][y - 2].id);
+						}
+					} else if (y > 1 && y < 6) {
+						if (
+							gameboard[x + 1][y - 1].occupiedBy.name === "player1" &&
+							!gameboard[x + 2][y - 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x + 2][y - 2].id);
+						}
+
+						if (
+							gameboard[x + 1][y + 1].occupiedBy.name === "player1" &&
+							!gameboard[x + 2][y + 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x + 2][y + 2].id);
+						}
+					}
+				} else if (x === 7) {
+					if (y < 2) {
+						if (
+							gameboard[x - 1][y + 1].occupiedBy.name === "player1" &&
+							!gameboard[x - 2][y + 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x - 2][y + 2].id);
+						}
+					} else if (y > 5) {
+						//piece will never end up here
+						//leaving block and comment for logic purpose
+					} else if (y > 1 && y < 6) {
+						if (
+							gameboard[x - 1][y - 1].occupiedBy.name === "player1" &&
+							!gameboard[x - 2][y - 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x - 2][y - 2].id);
+						}
+
+						if (
+							gameboard[x - 1][y + 1].occupiedBy.name === "player1" &&
+							!gameboard[x - 2][y + 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x - 2][y + 2].id);
+						}
+					}
+				} else {
+					if (y < 2) {
+						if (
+							gameboard[x + 1][y + 1].occupiedBy.name === "player1" &&
+							!gameboard[x + 2][y + 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x + 2][y + 2].id);
+						}
+						if (
+							gameboard[x - 1][y + 1].occupiedBy.name === "player1" &&
+							!gameboard[x - 2][y + 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x - 2][y + 2].id);
+						}
+					} else if (y > 5) {
+						if (
+							gameboard[x + 1][y - 1].occupiedBy.name === "player1" &&
+							!gameboard[x + 2][y - 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x + 2][y - 2].id);
+						}
+						if (
+							gameboard[x - 1][y - 1].occupiedBy.name === "player1" &&
+							!gameboard[x - 2][y - 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x - 2][y - 2].id);
+						}
+					} else {
+						if (
+							gameboard[x + 1][y + 1].occupiedBy.name === "player1" &&
+							!gameboard[x + 2][y + 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x + 2][y + 2].id);
+						}
+						if (
+							gameboard[x - 1][y + 1].occupiedBy.name === "player1" &&
+							!gameboard[x - 2][y + 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x - 2][y + 2].id);
+						}
+						if (
+							gameboard[x + 1][y - 1].occupiedBy.name === "player1" &&
+							!gameboard[x + 2][y - 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x + 2][y - 2].id);
+						}
+						if (
+							gameboard[x - 1][y - 1].occupiedBy.name === "player1" &&
+							!gameboard[x - 2][y - 2].occupiedBy.name
+						) {
+							tempClaimOptions.push(gameboard[x - 2][y - 2].id);
+						}
+					}
 				}
 			}
 		}
@@ -445,7 +727,7 @@ export default function Home() {
 					return {
 						...square,
 						occupiedBy: {
-							...square.occupiedBy,
+							...selectedSquare.square.occupiedBy,
 							name: currentPlayer === "player1" ? "player1" : "player2",
 						},
 					};
